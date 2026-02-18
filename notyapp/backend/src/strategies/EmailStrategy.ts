@@ -17,6 +17,7 @@ export class EmailStrategy implements INotificationStrategy {
             host: "smtp.gmail.com",
             port: 587,
             secure: false,
+            pool: true,
             auth: {
                 user: process.env.EMAIL_USER,
                 pass: process.env.EMAIL_PASS
@@ -24,7 +25,10 @@ export class EmailStrategy implements INotificationStrategy {
             tls: {
                 rejectUnauthorized: false,
                 minVersion: 'TLSv1.2'
-            }
+            },
+            connectionTimeout: 10000,
+            greetingTimeout: 10000,
+            socketTimeout: 20000
         });
     }
 
