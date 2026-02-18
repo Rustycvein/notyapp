@@ -1,4 +1,4 @@
-const API_URL = 'https://notyapp-yuu5.onrender.com/api/notifications'; 
+const API_URL = 'https://notyapp-yuu5.onrender.com/api/notifications';
 
 let successChart: any = null;
 let channelChart: any = null;
