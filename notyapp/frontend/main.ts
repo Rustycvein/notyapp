@@ -1,4 +1,5 @@
-const API_URL = 'http://localhost:3000/api/notifications';
+const API_URL = 'https://notyapp.onrender.com/api/notifications'; 
+
 let successChart: any = null;
 let channelChart: any = null;
 let currentToken: string = "";
@@ -40,9 +41,7 @@ async function initFirebase() {
             });
             if (token) {
                 currentToken = token;
-                const toInput = document.getElementById('to') as HTMLInputElement;
-                const typeSelect = document.getElementById('type') as HTMLSelectElement;
-                if (typeSelect.value === 'push') toInput.value = token;
+                updateToFieldWithToken();
             }
         }
     } catch (e) { console.error(e); }
@@ -51,18 +50,18 @@ async function initFirebase() {
 const typeSelect = document.getElementById('type') as HTMLSelectElement;
 const toInput = document.getElementById('to') as HTMLInputElement;
 
-typeSelect?.addEventListener('change', () => {
+function updateToFieldWithToken() {
     if (typeSelect.value === 'push') {
         toInput.value = currentToken;
         toInput.placeholder = "FCM Token (Auto)";
     } else if (typeSelect.value === 'email') {
-        toInput.value = "";
         toInput.placeholder = "user@example.com";
     } else {
-        toInput.value = "";
         toInput.placeholder = "+123456789";
     }
-});
+}
+
+typeSelect?.addEventListener('change', updateToFieldWithToken);
 
 (window as any).showSection = (sectionId: string) => {
     document.querySelectorAll('.main-content section').forEach(s => s.classList.add('hidden'));
@@ -77,35 +76,35 @@ async function updateCharts() {
     try {
         const res = await fetch(`${API_URL}/stats`);
         const stats = await res.json();
-        setTimeout(() => {
-            const ctxS = (document.getElementById('successChart') as HTMLCanvasElement).getContext('2d');
-            const ctxC = (document.getElementById('channelChart') as HTMLCanvasElement).getContext('2d');
-            if (successChart) successChart.destroy();
-            successChart = new (window as any).Chart(ctxS, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Sent', 'Failed'],
-                    datasets: [{
-                        data: [stats.sent, stats.failed],
-                        backgroundColor: ['#22c55e', '#ef4444']
-                    }]
-                },
-                options: { responsive: true, maintainAspectRatio: false }
-            });
-            if (channelChart) channelChart.destroy();
-            channelChart = new (window as any).Chart(ctxC, {
-                type: 'bar',
-                data: {
-                    labels: ['Email', 'SMS', 'Push'],
-                    datasets: [{
-                        label: 'Volume',
-                        data: [stats.channels.email, stats.channels.sms, stats.channels.push],
-                        backgroundColor: '#6366f1'
-                    }]
-                },
-                options: { responsive: true, maintainAspectRatio: false }
-            });
-        }, 50);
+        const ctxS = (document.getElementById('successChart') as HTMLCanvasElement).getContext('2d');
+        const ctxC = (document.getElementById('channelChart') as HTMLCanvasElement).getContext('2d');
+        
+        if (successChart) successChart.destroy();
+        successChart = new (window as any).Chart(ctxS, {
+            type: 'doughnut',
+            data: {
+                labels: ['Sent', 'Failed'],
+                datasets: [{
+                    data: [stats.sent, stats.failed],
+                    backgroundColor: ['#22c55e', '#ef4444']
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+
+        if (channelChart) channelChart.destroy();
+        channelChart = new (window as any).Chart(ctxC, {
+            type: 'bar',
+            data: {
+                labels: ['Email', 'SMS', 'Push'],
+                datasets: [{
+                    label: 'Volume',
+                    data: [stats.channels.email, stats.channels.sms, stats.channels.push],
+                    backgroundColor: '#6366f1'
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
     } catch (e) { console.error(e); }
 }
 
@@ -153,14 +152,10 @@ form?.addEventListener('submit', async (e) => {
         if (res.ok) {
             alert("¡Enviado!");
             form.reset();
-            if ((document.getElementById('type') as HTMLSelectElement).value === 'push') {
-                (document.getElementById('to') as HTMLInputElement).value = currentToken;
-            }
+            updateToFieldWithToken();
         }
     } catch (e) { alert("Error"); }
     finally { sendBtn.disabled = false; }
 });
 
-document.addEventListener('DOMContentLoaded', () => {
-    initFirebase();
-});
+document.addEventListener('DOMContentLoaded', initFirebase);

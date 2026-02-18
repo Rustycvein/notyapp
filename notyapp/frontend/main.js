@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:3000/api/notifications';
+const API_URL = 'https://notyapp.onrender.com/api/notifications';
 let successChart = null;
 let channelChart = null;
 let currentToken = "";
@@ -36,10 +36,7 @@ async function initFirebase() {
             });
             if (token) {
                 currentToken = token;
-                const toInput = document.getElementById('to');
-                const typeSelect = document.getElementById('type');
-                if (typeSelect.value === 'push')
-                    toInput.value = token;
+                updateToFieldWithToken();
             }
         }
     }
@@ -49,20 +46,19 @@ async function initFirebase() {
 }
 const typeSelect = document.getElementById('type');
 const toInput = document.getElementById('to');
-typeSelect?.addEventListener('change', () => {
+function updateToFieldWithToken() {
     if (typeSelect.value === 'push') {
         toInput.value = currentToken;
         toInput.placeholder = "FCM Token (Auto)";
     }
     else if (typeSelect.value === 'email') {
-        toInput.value = "";
         toInput.placeholder = "user@example.com";
     }
     else {
-        toInput.value = "";
         toInput.placeholder = "+123456789";
     }
-});
+}
+typeSelect?.addEventListener('change', updateToFieldWithToken);
 window.showSection = (sectionId) => {
     document.querySelectorAll('.main-content section').forEach(s => s.classList.add('hidden'));
     document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
@@ -77,37 +73,35 @@ async function updateCharts() {
     try {
         const res = await fetch(`${API_URL}/stats`);
         const stats = await res.json();
-        setTimeout(() => {
-            const ctxS = document.getElementById('successChart').getContext('2d');
-            const ctxC = document.getElementById('channelChart').getContext('2d');
-            if (successChart)
-                successChart.destroy();
-            successChart = new window.Chart(ctxS, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Sent', 'Failed'],
-                    datasets: [{
-                            data: [stats.sent, stats.failed],
-                            backgroundColor: ['#22c55e', '#ef4444']
-                        }]
-                },
-                options: { responsive: true, maintainAspectRatio: false }
-            });
-            if (channelChart)
-                channelChart.destroy();
-            channelChart = new window.Chart(ctxC, {
-                type: 'bar',
-                data: {
-                    labels: ['Email', 'SMS', 'Push'],
-                    datasets: [{
-                            label: 'Volume',
-                            data: [stats.channels.email, stats.channels.sms, stats.channels.push],
-                            backgroundColor: '#6366f1'
-                        }]
-                },
-                options: { responsive: true, maintainAspectRatio: false }
-            });
-        }, 50);
+        const ctxS = document.getElementById('successChart').getContext('2d');
+        const ctxC = document.getElementById('channelChart').getContext('2d');
+        if (successChart)
+            successChart.destroy();
+        successChart = new window.Chart(ctxS, {
+            type: 'doughnut',
+            data: {
+                labels: ['Sent', 'Failed'],
+                datasets: [{
+                        data: [stats.sent, stats.failed],
+                        backgroundColor: ['#22c55e', '#ef4444']
+                    }]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+        if (channelChart)
+            channelChart.destroy();
+        channelChart = new window.Chart(ctxC, {
+            type: 'bar',
+            data: {
+                labels: ['Email', 'SMS', 'Push'],
+                datasets: [{
+                        label: 'Volume',
+                        data: [stats.channels.email, stats.channels.sms, stats.channels.push],
+                        backgroundColor: '#6366f1'
+                    }]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
     }
     catch (e) {
         console.error(e);
@@ -159,9 +153,7 @@ form?.addEventListener('submit', async (e) => {
         if (res.ok) {
             alert("¡Enviado!");
             form.reset();
-            if (document.getElementById('type').value === 'push') {
-                document.getElementById('to').value = currentToken;
-            }
+            updateToFieldWithToken();
         }
     }
     catch (e) {
@@ -171,6 +163,4 @@ form?.addEventListener('submit', async (e) => {
         sendBtn.disabled = false;
     }
 });
-document.addEventListener('DOMContentLoaded', () => {
-    initFirebase();
-});
+document.addEventListener('DOMContentLoaded', initFirebase);
