@@ -1,0 +1,22 @@
+{
+  "OTP": {
+    "subject": "Código de Seguridad",
+    "body": "Hola {{name}}, tu código es {{code}}. Monto total: {{amount}}"
+  },
+  "WELCOME": {
+    "subject": "Bienvenido a NotyApp",
+    "body": "¡Hola {{name}}, nos alegra tenerte aquí!"
+  },
+  "ALERT": {
+    "subject": "Alerta del Sistema",
+    "body": "Advertencia {{name}}, revisa tu cuenta por el monto de {{amount}}."
+  },
+  "MARKETING": {
+    "subject": "Oferta Especial para ti",
+    "body": "¡Buenas noticias {{name}}! Tenemos descuentos exclusivos para ti. ¡Revisa nuestra app!"
+  },
+  "RECEIPTS": {
+    "subject": "Confirmación de Pago",
+    "body": "Hola {{name}}, hemos recibido tu pago de {{amount}}. ¡Gracias por su compra!"
+  }
+}
