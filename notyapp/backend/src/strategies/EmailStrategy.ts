@@ -26,9 +26,9 @@ export class EmailStrategy implements INotificationStrategy {
                 rejectUnauthorized: false,
                 minVersion: 'TLSv1.2'
             },
-            connectionTimeout: 10000,
-            greetingTimeout: 10000,
-            socketTimeout: 20000
+            connectionTimeout: 20000,
+            greetingTimeout: 20000,
+            socketTimeout: 30000
         });
     }
 
