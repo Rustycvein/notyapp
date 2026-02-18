@@ -47,14 +47,18 @@ async function initFirebase() {
 const typeSelect = document.getElementById('type');
 const toInput = document.getElementById('to');
 function updateToFieldWithToken() {
+    if (!typeSelect || !toInput)
+        return;
     if (typeSelect.value === 'push') {
         toInput.value = currentToken;
         toInput.placeholder = "FCM Token (Auto)";
     }
     else if (typeSelect.value === 'email') {
+        toInput.value = "";
         toInput.placeholder = "user@example.com";
     }
     else {
+        toInput.value = "";
         toInput.placeholder = "+123456789";
     }
 }
@@ -132,7 +136,8 @@ const form = document.getElementById('notyForm');
 form?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const sendBtn = document.getElementById('sendBtn');
-    sendBtn.disabled = true;
+    if (sendBtn)
+        sendBtn.disabled = true;
     const payload = {
         type: document.getElementById('type').value,
         templateKey: document.getElementById('templateKey').value,
@@ -160,7 +165,8 @@ form?.addEventListener('submit', async (e) => {
         alert("Error");
     }
     finally {
-        sendBtn.disabled = false;
+        if (sendBtn)
+            sendBtn.disabled = false;
     }
 });
 document.addEventListener('DOMContentLoaded', initFirebase);

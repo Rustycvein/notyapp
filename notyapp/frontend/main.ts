@@ -1,4 +1,4 @@
-const API_URL = 'https://notyapp-yuu5.onrender.com/api/notifications';
+const API_URL = 'https://notyapp-yuu5.onrender.com/api/notifications'; 
 
 let successChart: any = null;
 let channelChart: any = null;
@@ -51,12 +51,15 @@ const typeSelect = document.getElementById('type') as HTMLSelectElement;
 const toInput = document.getElementById('to') as HTMLInputElement;
 
 function updateToFieldWithToken() {
+    if (!typeSelect || !toInput) return;
     if (typeSelect.value === 'push') {
         toInput.value = currentToken;
         toInput.placeholder = "FCM Token (Auto)";
     } else if (typeSelect.value === 'email') {
+        toInput.value = "";
         toInput.placeholder = "user@example.com";
     } else {
+        toInput.value = "";
         toInput.placeholder = "+123456789";
     }
 }
@@ -131,7 +134,8 @@ const form = document.getElementById('notyForm') as HTMLFormElement;
 form?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const sendBtn = document.getElementById('sendBtn') as HTMLButtonElement;
-    sendBtn.disabled = true;
+    if (sendBtn) sendBtn.disabled = true;
+
     const payload = {
         type: (document.getElementById('type') as HTMLSelectElement).value,
         templateKey: (document.getElementById('templateKey') as HTMLSelectElement).value,
@@ -143,6 +147,7 @@ form?.addEventListener('submit', async (e) => {
             amount: (document.getElementById('amount') as HTMLInputElement).value || "0.00"
         }
     };
+
     try {
         const res = await fetch(`${API_URL}/send`, {
             method: 'POST',
@@ -155,7 +160,7 @@ form?.addEventListener('submit', async (e) => {
             updateToFieldWithToken();
         }
     } catch (e) { alert("Error"); }
-    finally { sendBtn.disabled = false; }
+    finally { if (sendBtn) sendBtn.disabled = false; }
 });
 
 document.addEventListener('DOMContentLoaded', initFirebase);
