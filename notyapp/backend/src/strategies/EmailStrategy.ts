@@ -14,10 +14,15 @@ export class EmailStrategy implements INotificationStrategy {
         }
 
         this.transporter = nodemailer.createTransport({
-            service: 'gmail',
+            host: "smtp.gmail.com",
+            port: 465,
+            secure: true,
             auth: {
                 user: process.env.EMAIL_USER,
                 pass: process.env.EMAIL_PASS
+            },
+            tls: {
+                rejectUnauthorized: false
             }
         });
     }
@@ -28,7 +33,7 @@ export class EmailStrategy implements INotificationStrategy {
                 throw new Error("El transporte de correo no ha sido inicializado correctamente.");
             }
 
-            const info = await this.transporter.sendMail({
+            await this.transporter.sendMail({
                 from: `"NotyApp System" <${process.env.EMAIL_USER}>`,
                 to: payload.to,
                 subject: payload.subject,
