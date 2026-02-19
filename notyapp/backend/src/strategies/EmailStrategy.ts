@@ -1,4 +1,4 @@
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 import type { 
     INotificationStrategy, 
     INotificationPayload, 
@@ -6,21 +6,43 @@ import type {
 } from '../interfaces/INotificationStrategy.js';
 
 export class EmailStrategy implements INotificationStrategy {
-    private resend: Resend;
+    private transporter: nodemailer.Transporter | null = null;
 
     constructor() {
-        if (!process.env.RESEND_API_KEY) {
-            console.error("ERROR: Falta RESEND_API_KEY en las variables de entorno");
-        }
-        this.resend = new Resend(process.env.RESEND_API_KEY);
+        this.transporter = nodemailer.createTransport({
+            host: "smtp.gmail.com",
+            port: 587,
+            secure: false,
+            auth: {
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASS
+            },
+            tls: {
+                rejectUnauthorized: false
+            }
+        } as any); 
+
+        this.transporter.verify((error) => {
+            if (error) {
+                console.error('[EmailStrategy] SMTP error:', error.message);
+                this.transporter = null;
+            } else {
+                console.log('[EmailStrategy] Gmail SMTP listo en Koyeb');
+            }
+        });
     }
 
     async send(payload: INotificationPayload): Promise<INotificationResponse> {
         try {
-            const { data, error } = await this.resend.emails.send({
-                from: 'onboarding@resend.dev',
+            if (!this.transporter) {
+                throw new Error("El transporte de correo no está disponible.");
+            }
+
+            await this.transporter.sendMail({
+                from: `"NotyApp" <${process.env.EMAIL_USER}>`,
                 to: payload.to,
                 subject: payload.subject,
+                text: payload.body,
                 html: `
                     <div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 5px;">
                         <h2 style="color: #1a73e8;">${payload.subject}</h2>
@@ -29,16 +51,10 @@ export class EmailStrategy implements INotificationStrategy {
                 `
             });
 
-            if (error) {
-                throw new Error(error.message);
-            }
-
-            console.log(`[EmailStrategy] Éxito vía Resend. ID: ${data?.id}`);
-
             return {
                 success: true,
-                message: "Notificación enviada vía API de Resend.",
-                provider: 'Resend-API'
+                message: "Notificación enviada exitosamente.",
+                provider: 'Gmail-Koyeb'
             };
         } catch (error: any) {
             console.error("[EmailStrategy Error]:", error.message);
