@@ -6,7 +6,7 @@ import type {
 } from '../interfaces/INotificationStrategy.js';
 
 export class EmailStrategy implements INotificationStrategy {
-    private transporter: nodemailer.Transporter;
+    private transporter: nodemailer.Transporter | null = null;
 
     constructor() {
         if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
@@ -31,12 +31,21 @@ export class EmailStrategy implements INotificationStrategy {
             greetingTimeout: 20000,
             socketTimeout: 30000
         } as any); 
+
+        this.transporter.verify((error) => {
+            if (error) {
+                console.error('[EmailStrategy] SMTP verification failed:', error.message);
+                this.transporter = null;
+            } else {
+                console.log('[EmailStrategy] SMTP transporter is ready');
+            }
+        });
     }
 
     async send(payload: INotificationPayload): Promise<INotificationResponse> {
         try {
             if (!this.transporter) {
-                throw new Error("El transporte de correo no ha sido inicializado correctamente.");
+                throw new Error("El transporte de correo no está disponible.");
             }
 
             await this.transporter.sendMail({
@@ -56,12 +65,12 @@ export class EmailStrategy implements INotificationStrategy {
 
             return {
                 success: true,
-                message: "Notificación enviada exitosamente a la bandeja de entrada real.",
+                message: "Notificación enviada exitosamente.",
                 provider: 'Gmail-SMTP'
             };
         } catch (error: any) {
-            console.error("[EmailStrategy Error]:", error.message);
-            throw new Error(`Fallo en el envío de correo real: ${error.message}`);
+            console.error("[EmailStrategy Error]:", error.stack || error.message || error);
+            throw new Error(`Fallo en el envío: ${error.message || error}`);
         }
     }
 }
