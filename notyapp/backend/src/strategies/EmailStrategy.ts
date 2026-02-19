@@ -18,6 +18,7 @@ export class EmailStrategy implements INotificationStrategy {
             port: 587,
             secure: false,
             pool: true,
+            family: 4,
             auth: {
                 user: process.env.EMAIL_USER,
                 pass: process.env.EMAIL_PASS
@@ -29,7 +30,7 @@ export class EmailStrategy implements INotificationStrategy {
             connectionTimeout: 20000,
             greetingTimeout: 20000,
             socketTimeout: 30000
-        });
+        } as any); 
     }
 
     async send(payload: INotificationPayload): Promise<INotificationResponse> {
