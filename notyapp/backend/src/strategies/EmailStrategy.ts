@@ -1,4 +1,4 @@
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 import type { 
     INotificationStrategy, 
     INotificationPayload, 
@@ -6,53 +6,21 @@ import type {
 } from '../interfaces/INotificationStrategy.js';
 
 export class EmailStrategy implements INotificationStrategy {
-    private transporter: nodemailer.Transporter | null = null;
+    private resend: Resend;
 
     constructor() {
-        if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-            console.error("ERROR: Falta EMAIL_USER o EMAIL_PASS en el archivo .env");
+        if (!process.env.RESEND_API_KEY) {
+            console.error("ERROR: Falta RESEND_API_KEY en las variables de entorno");
         }
-
-        this.transporter = nodemailer.createTransport({
-            host: "smtp.gmail.com",
-            port: 587,
-            secure: false,
-            pool: true,
-            family: 4,
-            auth: {
-                user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASS
-            },
-            tls: {
-                rejectUnauthorized: false,
-                minVersion: 'TLSv1.2'
-            },
-            connectionTimeout: 20000,
-            greetingTimeout: 20000,
-            socketTimeout: 30000
-        } as any); 
-
-        this.transporter.verify((error) => {
-            if (error) {
-                console.error('[EmailStrategy] SMTP verification failed:', error.message);
-                this.transporter = null;
-            } else {
-                console.log('[EmailStrategy] SMTP transporter is ready');
-            }
-        });
+        this.resend = new Resend(process.env.RESEND_API_KEY);
     }
 
     async send(payload: INotificationPayload): Promise<INotificationResponse> {
         try {
-            if (!this.transporter) {
-                throw new Error("El transporte de correo no está disponible.");
-            }
-
-            await this.transporter.sendMail({
-                from: `"NotyApp System" <${process.env.EMAIL_USER}>`,
+            const { data, error } = await this.resend.emails.send({
+                from: 'onboarding@resend.dev',
                 to: payload.to,
                 subject: payload.subject,
-                text: payload.body,
                 html: `
                     <div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 5px;">
                         <h2 style="color: #1a73e8;">${payload.subject}</h2>
@@ -61,16 +29,20 @@ export class EmailStrategy implements INotificationStrategy {
                 `
             });
 
-            console.log(`[EmailStrategy] Correo enviado con éxito a: ${payload.to}`);
+            if (error) {
+                throw new Error(error.message);
+            }
+
+            console.log(`[EmailStrategy] Éxito vía Resend. ID: ${data?.id}`);
 
             return {
                 success: true,
-                message: "Notificación enviada exitosamente.",
-                provider: 'Gmail-SMTP'
+                message: "Notificación enviada vía API de Resend.",
+                provider: 'Resend-API'
             };
         } catch (error: any) {
-            console.error("[EmailStrategy Error]:", error.stack || error.message || error);
-            throw new Error(`Fallo en el envío: ${error.message || error}`);
+            console.error("[EmailStrategy Error]:", error.message);
+            throw new Error(`Fallo en el envío: ${error.message}`);
         }
     }
 }
