@@ -26,7 +26,7 @@ export class EmailStrategy implements INotificationStrategy {
         this.transporter.verify((error) => {
             if (error) {
                 console.error('[EmailStrategy] SMTP error:', error.message);
-                this.transporter = null;
+                //this.transporter = null;
             } else {
                 console.log('[EmailStrategy] Gmail SMTP listo en Railway');
             }

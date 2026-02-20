@@ -18,7 +18,8 @@ app.get('/health', (req, res) => {
 });
 
 app.use('/api/notifications', notificationRoutes);
-
+console.log("EMAIL_USER:", process.env.EMAIL_USER);
+console.log("EMAIL_PASS exists:", !!process.env.EMAIL_PASS);
 export default app;
 
 //
