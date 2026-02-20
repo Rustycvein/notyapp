@@ -13,6 +13,8 @@ app.get('/health', (req, res) => {
     res.status(200).json({ status: 'ok' });
 });
 app.use('/api/notifications', notificationRoutes);
+console.log("EMAIL_USER:", process.env.EMAIL_USER);
+console.log("EMAIL_PASS exists:", !!process.env.EMAIL_PASS);
 export default app;
 //
 //# sourceMappingURL=app.js.map

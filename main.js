@@ -1,4 +1,4 @@
-const API_URL = 'https://rustycvein.github.io/notyapp/';
+const API_URL = 'https://notyapp-production.up.railway.app/api/notifications';
 let successChart = null;
 let channelChart = null;
 let currentToken = "";
