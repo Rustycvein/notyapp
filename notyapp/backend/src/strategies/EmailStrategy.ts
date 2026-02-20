@@ -27,7 +27,7 @@ export class EmailStrategy implements INotificationStrategy {
                 console.error('[EmailStrategy] SMTP error:', error.message);
                 this.transporter = null;
             } else {
-                console.log('[EmailStrategy] Gmail SMTP listo en Koyeb');
+                console.log('[EmailStrategy] Gmail SMTP listo en Railway');
             }
         });
     }
@@ -54,7 +54,7 @@ export class EmailStrategy implements INotificationStrategy {
             return {
                 success: true,
                 message: "Notificación enviada exitosamente.",
-                provider: 'Gmail-Koyeb'
+                provider: 'Gmail-Railway'
             };
         } catch (error: any) {
             console.error("[EmailStrategy Error]:", error.message);
