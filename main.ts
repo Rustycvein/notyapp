@@ -149,11 +149,11 @@ form?.addEventListener('submit', async (e) => {
     };
 
     try {
-        const res = await fetch(`${API_URL}/send`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
+        const res = await fetch(`${API_URL}/api/notifications/send`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+});
         if (res.ok) {
             alert("¡Enviado!");
             form.reset();
