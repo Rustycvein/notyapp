@@ -12,7 +12,8 @@ export class EmailStrategy {
             },
             tls: {
                 rejectUnauthorized: false
-            }
+            },
+            family: 4
         });
         this.transporter.verify((error) => {
             if (error) {

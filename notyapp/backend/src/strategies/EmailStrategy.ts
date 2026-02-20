@@ -19,7 +19,8 @@ export class EmailStrategy implements INotificationStrategy {
             },
             tls: {
                 rejectUnauthorized: false
-            }
+            },
+            family:4
         } as any); 
 
         this.transporter.verify((error) => {
