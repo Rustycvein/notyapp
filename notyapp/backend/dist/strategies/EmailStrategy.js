@@ -1,51 +1,33 @@
-import nodemailer from 'nodemailer';
+import { Resend } from "resend";
 export class EmailStrategy {
-    transporter = null;
+    resend;
     constructor() {
-        this.transporter = nodemailer.createTransport({
-            host: "smtp.gmail.com",
-            port: 587,
-            secure: false,
-            auth: {
-                user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASS
-            },
-            tls: {
-                rejectUnauthorized: false
-            },
-            family: 4
-        });
-        this.transporter.verify((error) => {
-            if (error) {
-                console.error('[EmailStrategy] SMTP error:', error.message);
-                //this.transporter = null;
-            }
-            else {
-                console.log('[EmailStrategy] Gmail SMTP listo en Railway');
-            }
-        });
+        if (!process.env.RESEND_API_KEY) {
+            throw new Error("RESEND_API_KEY no está definida.");
+        }
+        this.resend = new Resend(process.env.RESEND_API_KEY);
+        console.log("[EmailStrategy] Resend inicializado 🚀");
     }
     async send(payload) {
         try {
-            if (!this.transporter) {
-                throw new Error("El transporte de correo no está disponible.");
-            }
-            await this.transporter.sendMail({
-                from: `"NotyApp" <${process.env.EMAIL_USER}>`,
+            const { error } = await this.resend.emails.send({
+                from: "NotyApp <onboarding@resend.dev>", // temporal para pruebas
                 to: payload.to,
                 subject: payload.subject,
-                text: payload.body,
                 html: `
-                    <div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 5px;">
-                        <h2 style="color: #1a73e8;">${payload.subject}</h2>
+                    <div style="font-family: sans-serif; padding: 20px;">
+                        <h2>${payload.subject}</h2>
                         <p>${payload.body}</p>
                     </div>
                 `
             });
+            if (error) {
+                throw new Error(error.message);
+            }
             return {
                 success: true,
-                message: "Notificación enviada exitosamente.",
-                provider: 'Gmail-Railway'
+                message: "Notificación enviada con Resend.",
+                provider: "Resend"
             };
         }
         catch (error) {
@@ -54,5 +36,4 @@ export class EmailStrategy {
         }
     }
 }
-//
 //# sourceMappingURL=EmailStrategy.js.map
