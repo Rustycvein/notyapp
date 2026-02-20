@@ -1,4 +1,4 @@
-const API_URL = 'https://notyapp-yuu5.onrender.com/api/notifications';
+const API_URL = 'https://notyapp-production.up.railway.app/api/notifications';
 let successChart = null;
 let channelChart = null;
 let currentToken = "";
