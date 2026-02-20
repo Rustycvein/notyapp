@@ -1,4 +1,4 @@
-import { Resend } from "resend";
+import sgMail from "@sendgrid/mail";
 import type { 
     INotificationStrategy, 
     INotificationPayload, 
@@ -7,23 +7,20 @@ import type {
 
 export class EmailStrategy implements INotificationStrategy {
 
-    private resend: Resend;
-
     constructor() {
-        if (!process.env.RESEND_API_KEY) {
-            throw new Error("RESEND_API_KEY no está definida.");
+        if (!process.env.SENDGRID_API_KEY) {
+            throw new Error("SENDGRID_API_KEY no está definida.");
         }
 
-        this.resend = new Resend(process.env.RESEND_API_KEY);
-        console.log("[EmailStrategy] Resend inicializado 🚀");
+        sgMail.setApiKey(process.env.SENDGRID_API_KEY);
     }
 
     async send(payload: INotificationPayload): Promise<INotificationResponse> {
         try {
 
-            const { error } = await this.resend.emails.send({
-                from: "NotyApp <onboarding@resend.dev>", // temporal para pruebas
+            const msg = {
                 to: payload.to,
+                from: "proyectosalterna92@gmail.com",
                 subject: payload.subject,
                 html: `
                     <div style="font-family: sans-serif; padding: 20px;">
@@ -31,21 +28,18 @@ export class EmailStrategy implements INotificationStrategy {
                         <p>${payload.body}</p>
                     </div>
                 `
-            });
+            };
 
-            if (error) {
-                throw new Error(error.message);
-            }
+            await sgMail.send(msg);
 
             return {
                 success: true,
-                message: "Notificación enviada con Resend.",
-                provider: "Resend"
+                message: "Notificación enviada con SendGrid.",
+                provider: "SendGrid"
             };
 
         } catch (error: any) {
-            console.error("[EmailStrategy Error]:", error.message);
-            throw new Error(`Fallo en el envío: ${error.message}`);
+            throw new Error("Fallo en el envío con SendGrid.");
         }
     }
 }
