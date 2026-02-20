@@ -14,5 +14,5 @@ app.get('/health', (req, res) => {
 });
 app.use('/api/notifications', notificationRoutes);
 export default app;
-////
+//
 //# sourceMappingURL=app.js.map
