@@ -29,10 +29,13 @@ const firebaseConfig = {
 
 async function initFirebase() {
     try {
-        const app = (window as any).firebase.initializeApp(firebaseConfig);
-        const messaging = (window as any).firebase.messaging();
+        const app = (window as any).firebase?.initializeApp(firebaseConfig);
+        const messaging = (window as any).firebase?.messaging();
+        if (!messaging) return;
+        
         const registration = await navigator.serviceWorker.register('./firebase-messaging-sw.js');
         await navigator.serviceWorker.ready;
+        
         const permission = await Notification.requestPermission();
         if (permission === 'granted') {
             const token = await messaging.getToken({ 
@@ -44,11 +47,11 @@ async function initFirebase() {
                 updateToFieldWithToken();
             }
         }
-    } catch (e) { console.error(e); }
+    } catch (e) { console.error("Firebase error:", e); }
 }
 
-const typeSelect = document.getElementById('type') as HTMLSelectElement;
-const toInput = document.getElementById('to') as HTMLInputElement;
+const typeSelect = document.getElementById('type') as HTMLSelectElement | null;
+const toInput = document.getElementById('to') as HTMLInputElement | null;
 
 function updateToFieldWithToken() {
     if (!typeSelect || !toInput) return;
@@ -79,36 +82,44 @@ async function updateCharts() {
     try {
         const res = await fetch(`${API_URL}/stats`);
         const stats = await res.json();
-        const ctxS = (document.getElementById('successChart') as HTMLCanvasElement).getContext('2d');
-        const ctxC = (document.getElementById('channelChart') as HTMLCanvasElement).getContext('2d');
+        
+        const canvasS = document.getElementById('successChart') as HTMLCanvasElement | null;
+        const canvasC = document.getElementById('channelChart') as HTMLCanvasElement | null;
+        
+        const ctxS = canvasS?.getContext('2d');
+        const ctxC = canvasC?.getContext('2d');
         
         if (successChart) successChart.destroy();
-        successChart = new (window as any).Chart(ctxS, {
-            type: 'doughnut',
-            data: {
-                labels: ['Sent', 'Failed'],
-                datasets: [{
-                    data: [stats.sent, stats.failed],
-                    backgroundColor: ['#22c55e', '#ef4444']
-                }]
-            },
-            options: { responsive: true, maintainAspectRatio: false }
-        });
+        if (ctxS) {
+            successChart = new (window as any).Chart(ctxS, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Sent', 'Failed'],
+                    datasets: [{
+                        data: [stats.sent, stats.failed],
+                        backgroundColor: ['#22c55e', '#ef4444']
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
 
         if (channelChart) channelChart.destroy();
-        channelChart = new (window as any).Chart(ctxC, {
-            type: 'bar',
-            data: {
-                labels: ['Email', 'SMS', 'Push'],
-                datasets: [{
-                    label: 'Volume',
-                    data: [stats.channels.email, stats.channels.sms, stats.channels.push],
-                    backgroundColor: '#6366f1'
-                }]
-            },
-            options: { responsive: true, maintainAspectRatio: false }
-        });
-    } catch (e) { console.error(e); }
+        if (ctxC) {
+            channelChart = new (window as any).Chart(ctxC, {
+                type: 'bar',
+                data: {
+                    labels: ['Email', 'SMS', 'Push'],
+                    datasets: [{
+                        label: 'Volume',
+                        data: [stats.channels.email, stats.channels.sms, stats.channels.push],
+                        backgroundColor: '#6366f1'
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+    } catch (e) { console.error("Chart error:", e); }
 }
 
 async function loadLogs() {
@@ -127,39 +138,40 @@ async function loadLogs() {
                 </tr>
             `).join('');
         }
-    } catch (e) { console.error(e); }
+    } catch (e) { console.error("Logs error:", e); }
 }
 
-const form = document.getElementById('notyForm') as HTMLFormElement;
+const form = document.getElementById('notyForm') as HTMLFormElement | null;
 form?.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const sendBtn = document.getElementById('sendBtn') as HTMLButtonElement;
+    const sendBtn = document.getElementById('sendBtn') as HTMLButtonElement | null;
     if (sendBtn) sendBtn.disabled = true;
 
+    
     const payload = {
-        type: (document.getElementById('type') as HTMLSelectElement).value,
-        templateKey: (document.getElementById('templateKey') as HTMLSelectElement).value,
-        lang: (document.getElementById('lang') as HTMLSelectElement).value,
-        to: (document.getElementById('to') as HTMLInputElement).value,
+        type: (document.getElementById('type') as HTMLSelectElement)?.value || '',
+        templateKey: (document.getElementById('templateKey') as HTMLSelectElement)?.value || '',
+        lang: (document.getElementById('lang') as HTMLSelectElement)?.value || '',
+        to: (document.getElementById('to') as HTMLInputElement)?.value || '',
         data: {
-            name: (document.getElementById('userName') as HTMLInputElement).value,
+            name: (document.getElementById('userName') as HTMLInputElement)?.value || '',
             code: Math.floor(100000 + Math.random() * 900000).toString(),
-            amount: (document.getElementById('amount') as HTMLInputElement).value || "0.00"
+            amount: (document.getElementById('amount') as HTMLInputElement)?.value || "0.00"
         }
     };
 
     try {
-        const res = await fetch(`${API_URL}/api/notifications/send`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-});
+        const res = await fetch(`${API_URL}/send`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
         if (res.ok) {
             alert("¡Enviado!");
-            form.reset();
+            form?.reset();
             updateToFieldWithToken();
         }
-    } catch (e) { alert("Error"); }
+    } catch (e) { alert("Error al enviar la petición"); }
     finally { if (sendBtn) sendBtn.disabled = false; }
 });
 
