@@ -1,0 +1,1 @@
+{"version":3,"file":"log.controle.js","sourceRoot":"","sources":["../../src/controller/log.controle.ts"],"names":[],"mappings":"AACA,OAAO,EAAE,mBAAmB,EAAE,MAAM,qCAAqC,CAAC;AAE1E,MAAM,CAAC,MAAM,OAAO,GAAG,CAAC,GAAY,EAAE,GAAa,EAAE,EAAE;IAEnD,MAAM,OAAO,GAAG,mBAAmB,CAAC,UAAU,EAAE,CAAC;IACjD,GAAG,CAAC,IAAI,CAAC,OAAO,CAAC,CAAC;AACtB,CAAC,CAAC"}
